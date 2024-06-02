@@ -1,88 +1,78 @@
-//
-// IMPORTANT :
-// - include `noLib: false` to your tsconfig.json file, under "compilerOptions"
-//
-///<reference lib="es2015.symbol" />
-///<reference lib="es2015.symbol.wellknown" />
-///<reference lib="es2015.collection" />
-///<reference lib="es2015.iterable" />
 
-import { Client, Room } from 'colyseus.js'
-import { isPreviewMode, getCurrentRealm } from '@decentraland/EnvironmentAPI'
-import { getUserData, UserData } from '@decentraland/Identity'
 
-export let userData: UserData
+import { Room } from 'colyseus.js'
+import { Color4 } from '@dcl/sdk/math'
+import { getRealm } from '~system/Runtime'
+import { GameController } from './game.controller'
+import { UserData, getUserData } from "~system/UserIdentity";
+import * as Colyseus from "colyseus.js";
+import { MyRoomState } from './types';
 
-export async function setUserData() {
-  userData = await getUserData()
-}
 
-export async function connect(roomName: string, options: any = {}) {
-  const isPreview = await isPreviewMode()
-  const realm = await getCurrentRealm()
+export class Connection {
+  private gameController: GameController
+  public userData: UserData | undefined
 
-  //
-  // make sure users are matched together by the same "realm".
-  //
-  if (isPreview) {
-    options.realm = 'test'
-  } else {
-    options.realm = realm?.displayName
+  constructor(gameController: GameController) {
+    this.gameController = gameController
   }
 
-  if (!userData) {
-    await setUserData()
+  async setUserData() {
+    this.userData = (await getUserData({})).data
   }
-  options.userData = userData
 
-  log('data sent:', options)
-
-  // const ENDPOINT = "wss://hept-j.colyseus.dev";
-  const ENDPOINT = isPreview
-    ? 'ws://127.0.0.1:2567' // local environment
-    : 'wss://fh4ogh.colyseus.dev' // production environment
-
-  if (isPreview) {
-    addConnectionDebugger(ENDPOINT)
-  }
-  const client = new Client(ENDPOINT)
-
-  try {
+  async connect(roomName: string) {
+    const { realmInfo } = await getRealm({})
     //
-    // Docs: https://docs.colyseus.io/client/client/#joinorcreate-roomname-string-options-any
+    // make sure users are matched together by the same "realm".
     //
-    const room = await client.joinOrCreate<any>(roomName, options)
-    if (isPreview) {
-      updateConnectionDebugger(room)
+    // if (realmInfo?.isPreview) {
+    //   options.realm = 'test'
+    // } else {
+    //   options.realm = realmInfo?.realmName
+    // }
+
+    if (!this.userData) {
+      await this.setUserData()
     }
 
-    return room
-  } catch (e) {
-    updateConnectionMessage(`Error: ${e.message}`, Color4.Red())
-    throw e
+    const options: JoinOptions = {
+      displayName: this.userData?.displayName ?? 'Anonymous',
+      userId: this.userData?.userId ?? '',
+    }
+
+    console.log('data sent:', options)
+
+    const ENDPOINT = 'ws://127.0.0.1:2567'
+    console.log("Connecting to", ENDPOINT)
+    if (realmInfo?.isPreview) {
+      this.addConnectionDebugger(ENDPOINT)
+      console.log("is preview")
+    }
+    let client = new Colyseus.Client('ws://127.0.0.1:2567');
+
+    try {
+      const room = await client.joinOrCreate<MyRoomState>(roomName, options)
+      console.log(room)
+      if (realmInfo?.isPreview) {
+        this.updateConnectionDebugger(room)
+      }
+
+      return room
+    } catch (error) {
+      this.updateConnectionMessage(`Error: ${error}`, Color4.Red())
+      throw error
+    }
   }
-}
-
-let message: UIText
-
-function addConnectionDebugger(endpoint: string) {
-  const canvas = new UICanvas()
-  message = new UIText(canvas)
-  message.fontSize = 15
-  message.width = 120
-  message.height = 30
-  message.hTextAlign = 'center'
-  message.vAlign = 'bottom'
-  message.positionX = -80
-  updateConnectionMessage(`Connecting to ${endpoint}`, Color4.White())
-}
-
-function updateConnectionMessage(value: string, color: Color4) {
-  message.value = value
-  message.color = color
-}
-
-function updateConnectionDebugger(room: Room) {
-  updateConnectionMessage('Connected.', Color4.Green())
-  room.onLeave(() => updateConnectionMessage('Connection lost', Color4.Red()))
+  addConnectionDebugger(endpoint: string) {
+    this.updateConnectionMessage(`Connecting to ${endpoint}`, Color4.Black())
+  }
+  updateConnectionMessage(value: string, color: Color4) {
+    this.gameController.ui.message = value
+    this.gameController.ui.color = color
+  }
+  updateConnectionDebugger(room: Room) {
+    this.updateConnectionMessage('Connected.', Color4.Green())
+    room.onLeave(() => this.updateConnectionMessage('Connection lost', Color4.Red()))
+  }
 }

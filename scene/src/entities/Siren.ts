@@ -1,33 +1,51 @@
+import { Animator, Entity, GltfContainer, Transform, engine } from "@dcl/sdk/ecs"
+import { Quaternion, Vector3 } from "@dcl/sdk/math"
+
 export class Siren {
-  animator: Animator
-  deactivateClip: AnimationState
-  activateClip: AnimationState
   entity: Entity
-  transform: Transform
+  constructor(parentedEntity: Entity, position: Vector3,
+    rotation: Quaternion,) {
+    this.entity = engine.addEntity()
+    Transform.createOrReplace(this.entity, {
+        parent: parentedEntity,
+    })
+    Transform.getMutable(this.entity).position.x = position.x
+    Transform.getMutable(this.entity).position.y = position.y
+    Transform.getMutable(this.entity).position.z = position.z
 
-  constructor(parentEntity: Entity, transform: TranformConstructorArgs) {
-    this.entity = new Entity(parentEntity.name + '-button')
-    this.entity.setParent(parentEntity)
+    Transform.getMutable(this.entity).rotation.x = rotation.x
+    Transform.getMutable(this.entity).rotation.y = rotation.y
+    Transform.getMutable(this.entity).rotation.z = rotation.z
+    Transform.getMutable(this.entity).rotation.w = rotation.w
 
-    this.animator = new Animator()
-    this.deactivateClip = new AnimationState('deactivate', { looping: true })
-    this.activateClip = new AnimationState('activate', { looping: true })
-    this.animator.addClip(this.deactivateClip)
-    this.animator.addClip(this.activateClip)
-    this.entity.addComponent(this.animator)
-    this.deactivateClip.play()
 
-    this.entity.addComponent(new Transform(transform))
+    Animator.create(this.entity, {
+      states: [{
+        clip: 'deactivate',
+        loop: true,
+        weight: 0.02,
+        speed: 1.7
+      },
+      {
+        clip: 'activate',
+        loop: true,
+        weight: 0.02,
+        speed: 1.7
+      }
+      ]
+    })
 
-    this.entity.addComponent(new GLTFShape('models/Siren.glb'))
+    GltfContainer.create(this.entity, { src: 'models/Siren.glb' })
   }
 
   toggle(value: boolean) {
-    this.activateClip.stop()
-    this.deactivateClip.stop()
-    // this.deactivateClip = new AnimationState('deactivate', { looping: true })
-    // this.activateClip = new AnimationState('activate', { looping: true })
-    const clip = value ? this.activateClip : this.deactivateClip
-    clip.play()
+    if (value === true) {
+      Animator.stopAllAnimations(this.entity, true)
+      Animator.getClip(this.entity, 'activate').playing = true 
+    } else {
+      Animator.stopAllAnimations(this.entity, true)
+      Animator.getClip(this.entity, 'deactivate').playing = true
+    }
+
   }
 }

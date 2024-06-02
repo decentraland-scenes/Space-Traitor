@@ -1,195 +1,140 @@
-import { Equipment } from './equipment'
-import * as utils from '@dcl/ecs-scene-utils'
-import { Button } from './Button'
+import { GltfContainer, Transform, engine } from "@dcl/sdk/ecs"
+import { Quaternion, Vector3 } from "@dcl/sdk/math"
+import { Room } from "colyseus.js"
+import { movePlayerTo } from "~system/RestrictedActions"
+import { GameController } from "../game.controller"
+import { Button } from "./Button"
+import { Equipment } from "./equipment"
 
-import { Door } from './door'
-
-import { EquiptmentChange, EquiptmentData } from 'src/types'
-import { movePlayerTo } from '@decentraland/RestrictedActions'
-import { Room } from 'colyseus.js'
+type EquiptmentData = {
+    position: Vector3
+    rotation: Quaternion
+    scale?: Vector3
+    startBroken: boolean
+}
 
 let equiptMentList: EquiptmentData[] = [
-  {
-    transform: { position: new Vector3(15.2, 1, 19) },
-    startBroken: true,
-  },
-  {
-    transform: {
-      position: new Vector3(24, 1, 7.2),
-      rotation: Quaternion.Euler(0, 270, 0),
+    {
+        position: Vector3.create(15.2, 1, 19),
+        startBroken: true,
+        rotation: {
+            x: 0,
+            y: 0,
+            z: 0,
+            w: 0
+        }
     },
-    startBroken: true,
-  },
-  {
-    transform: {
-      position: new Vector3(12, 1, 33),
-      rotation: Quaternion.Euler(0, 90, 0),
+    {
+        position: Vector3.create(24, 1, 7.2),
+        rotation: Quaternion.fromEulerDegrees(0, 270, 0),
+        startBroken: true,
     },
-    startBroken: true,
-  },
-  {
-    transform: {
-      position: new Vector3(36.4, 1, 31.2),
-      rotation: Quaternion.Euler(0, 270, 0),
+    {
+        position: Vector3.create(12, 1, 33),
+        rotation: Quaternion.fromEulerDegrees(0, 90, 0),
+        startBroken: true,
     },
-    startBroken: true,
-  },
-  {
-    transform: {
-      position: new Vector3(25, 1, 12),
-      rotation: Quaternion.Euler(0, 180, 0),
+    {
+        position: Vector3.create(36.4, 1, 31.2),
+        rotation: Quaternion.fromEulerDegrees(0, 270, 0),
+        startBroken: true,
     },
-    startBroken: true,
-  },
-  {
-    transform: {
-      position: new Vector3(35, 1, 0.9),
-      rotation: Quaternion.Euler(0, 90, 0),
+    {
+        position: Vector3.create(25, 1, 12),
+        rotation: Quaternion.fromEulerDegrees(0, 180, 0),
+        startBroken: true,
     },
-    startBroken: true,
-  },
-  {
-    transform: {
-      position: new Vector3(21.5, 5.3, 8.9),
-      rotation: Quaternion.Euler(0, 90, 0),
+    {
+        position: Vector3.create(35, 1, 0.9),
+        rotation: Quaternion.fromEulerDegrees(0, 90, 0),
+        startBroken: true,
     },
-    startBroken: true,
-  },
-  {
-    transform: {
-      position: new Vector3(36.4, 1, 39.4),
-      rotation: Quaternion.Euler(0, 270, 0),
+    {
+        position: Vector3.create(21.5, 5.3, 8.9),
+        rotation: Quaternion.fromEulerDegrees(0, 90, 0),
+        startBroken: true,
     },
-    startBroken: true,
-  },
+    {
+        position: Vector3.create(36.4, 1, 39.4),
+        rotation: Quaternion.fromEulerDegrees(0, 270, 0),
+        startBroken: true,
+    },
 ]
 
-export class SpaceShip extends Entity {
-  public toFix: Equipment[] = []
-  // public toSabbotage: Equipment[]
-  public active: boolean = false
-  public timeLeft: number
-  public room: Room
 
-  constructor(room: Room) {
-    super('Ship')
-    engine.addEntity(this)
+export class SpaceShip {
+    public toFix: Equipment[] = []
+    public active: boolean = false
+    public timeLeft: number = 0
+    public room: Room
+    public gameController: GameController
+    constructor(room: Room, gameController: GameController) {
+        this.room = room
+        this.gameController = gameController
+        for (let i = 0; i < equiptMentList.length; i++) {
+            let eq = new Equipment(
+                i,
+                equiptMentList[i].position,
+                equiptMentList[i].rotation,
+                (state) => {
+                    let data: SceneMessageEquiptmentChange = {
+                        msg: 'equiptmentChange',
+                        id: i,
+                        broken: state,
+                    }
+                    room.send('client', data satisfies SceneMessageEquiptmentChange)
+                },
+                equiptMentList[i].startBroken,
+                this.gameController
+            )
+            console.log('equipment created', i, equiptMentList.length)
+            this.toFix.push(eq)
+        }
 
-    this.room = room
+        let buttonPedestal = engine.addEntity()
+        Transform.createOrReplace(buttonPedestal, {
+            position: Vector3.create(24, 0, 18),
+            rotation: Quaternion.fromEulerDegrees(0, 90, 0),
+            scale: Vector3.create(1.5, 1.5, 1.5),
+        })
+        GltfContainer.createOrReplace(buttonPedestal, { src: 'models/Pedestal.glb' })
 
-    for (let i = 0; i < equiptMentList.length; i++) {
-      let eq = new Equipment(
-        i,
-        equiptMentList[i].transform,
-        (state) => {
-          let data: EquiptmentChange = {
-            id: i,
-            broken: state,
-          }
-          room.send('shipChange', data)
-        },
-        equiptMentList[i].startBroken
-      )
-      this.toFix.push(eq)
+        let panicButton = new Button('models/Danger_SciFi_Button.glb',
+            () => {
+                room.send('client', { msg: 'startvote' } satisfies SceneMessageStartVote)
+            },
+            'Emergency Meeting',
+            Vector3.create(24, 1.5, 18.1),
+            Quaternion.fromEulerDegrees(0, 90, 30),
+            Vector3.create(1.5, 1.5, 1.5)
+        )
+        return
     }
 
-    let buttonPedestal = new Entity()
-    buttonPedestal.addComponent(
-      new Transform({
-        position: new Vector3(24, 0, 18),
-        rotation: Quaternion.Euler(0, 90, 0),
-        scale: new Vector3(1.5, 1.5, 1.5),
-      })
-    )
-    buttonPedestal.addComponent(new GLTFShape('models/Pedestal.glb'))
-    engine.addEntity(buttonPedestal)
-
-    let panicButton = new Button(
-      {
-        position: new Vector3(24, 1.5, 18.1),
-        rotation: Quaternion.Euler(0, 90, 30),
-        scale: new Vector3(1.5, 1.5, 1.5),
-      },
-      new GLTFShape('models/Danger_SciFi_Button.glb'),
-      () => {
-        room.send('startvote')
-      },
-      'Emergency Meeting'
-    )
-
-    return
-  }
-
-  reactToSingleChanges(change: EquiptmentChange): void {
-    log('reacting to single change ', change)
-    this.toFix[change.id].alterState(change.broken)
-  }
-
-  // protected loadFullState(fullState: FullState): void {
-  //   log('loading full state ', fullState)
-  // if (fullState.active && !this.active) {
-  //   // Start new game
-  //   startUI(fullState.timeLeft)
-  //   playerIsTraitor = fullState.playerIsTraitor
-  //   if (fullState.playerIsTraitor) {
-  //     if (satelliteUI.isDialogOpen) {
-  //       satelliteUI.closeDialogWindow()
-  //     }
-  //     robotUI.openDialogWindow(EvilRobotBrief, 0)
-  //   }
-  //   mainDoor.open()
-  //   utils.setTimeout(30000, () => {
-  //     mainDoor.close()
-  //   })
-
-  //   music.playSong('Space-Traitor-2.mp3', 0.25)
-
-  //   //resetAllBoxes()
-  // } else if (!fullState.active && this.active) {
-  //   // finish game
-  //   //mainDoor.open()
-  // }
-  // for (let i = 0; i < this.toFix.length; i++) {
-  //   this.toFix[i].alterState(fullState.toFix[i].broken)
-  // }
-
-  // this.active = fullState.active
-  // this.timeLeft = fullState.timeLeft
-  // if (fixCounter) {
-  //   fixCounter.set(fullState.fixCount)
-  // }
-
-  // if (playerIsTraitor) {
-  //   log('PLAYER IS TRAITOR')
-  // }
-  // }
-
-  resetShip(): void {
-    movePlayerTo({ x: 1, y: 0, z: 1 }, { x: 8, y: 1, z: 8 })
-    for (let i = 0; i < this.toFix.length; i++) {
-      this.toFix[i].reset()
+    reactToSingleChanges(change: SceneMessageEquiptmentChange): void {
+        console.log('reacting to single change ', change)
+        this.toFix[change.id].alterState(change.broken)
     }
-  }
+
+
+    resetShip(): void {
+        movePlayerTo({
+            newRelativePosition: Vector3.create(1, 0, 1),
+            cameraTarget: Vector3.create(8, 1, 8)
+        })
+        for (let i = 0; i < this.toFix.length; i++) {
+            this.toFix[i].reset()
+        }
+    }
 }
 
 export let playerIsTraitor: boolean = false
 export let playerIsAlive: boolean = true
 
 export function setPlayerIsTraitor(value: boolean) {
-  playerIsTraitor = value
+    playerIsTraitor = value
 }
 
 export function setPlayerIsAlive(value: boolean) {
-  playerIsAlive = value
+    playerIsAlive = value
 }
-
-export let mainDoor = new Door(
-  {
-    position: new Vector3(4.5, 0, 4.3),
-    rotation: Quaternion.Euler(0, 45 + 90, 0),
-  },
-  new GLTFShape('models/MainDoor.glb'),
-  new Vector3(2, 0, -2)
-)
-
-// mainDoor.open()

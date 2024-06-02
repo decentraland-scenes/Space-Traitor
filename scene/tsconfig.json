@@ -1,32 +1,13 @@
 {
   "compilerOptions": {
-    "outFile": "./bin/game.js",
     "allowJs": true,
-    "noLib": false,
-    "paths": {
-      "@dcl/ui-scene-utils": [
-        "node_modules\\@dcl\\ui-scene-utils\\dist\\index.d.ts",
-        "node_modules/@dcl/ui-scene-utils/dist/index.d.ts"
-      ],
-      "@dcl/ecs-scene-utils": [
-        "node_modules\\@dcl\\ecs-scene-utils\\dist\\index.d.ts",
-        "node_modules/@dcl/ecs-scene-utils/dist/index.d.ts"
-      ],
-      "@dcl/npc-scene-utils": [
-        "node_modules\\@dcl\\npc-scene-utils\\dist\\index.d.ts",
-        "node_modules/@dcl/npc-scene-utils/dist/index.d.ts"
-      ],
-      "colyseus.js": [
-        "node_modules\\colyseus.js\\dist\\colyseus.d.ts",
-        "node_modules\\colyseus.js\\lib\\index.d.ts",
-        "node_modules/colyseus.js/dist/colyseus.d.ts"
-      ]
-    },
-    "baseUrl": "."
+    "strict": true,
+    "skipLibCheck": true
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "common-types"
   ],
-  "extends": "./node_modules/decentraland-ecs/types/tsconfig.json",
-  "compileOnSave": false
+  "extends": "@dcl/sdk/types/tsconfig.ecs7.json"
 }

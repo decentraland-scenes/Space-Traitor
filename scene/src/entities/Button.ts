@@ -1,48 +1,66 @@
-export class Button extends Entity {
-  soundClip = new AudioClip('sounds/click.mp3')
+import { Animator, AudioSource, GltfContainer, InputAction, MeshCollider, PointerEventType, PointerEvents, Transform, engine, inputSystem } from '@dcl/sdk/ecs'
+import { Quaternion, Vector3 } from '@dcl/sdk/math'
 
+export class Button {
+  public button = engine.addEntity()
   action: () => void
-
-  animationClip: AnimationState
-
   constructor(
-    transform: TranformConstructorArgs,
-    model: GLTFShape,
+    model: string,
     action: () => void,
     caption: string,
-    animation?: string
+    position: Vector3,
+    rotation: Quaternion,
+    scale?: Vector3,
   ) {
-    super('Equipment')
-    this.addComponent(new Transform(transform))
-    this.addComponent(model)
-    engine.addEntity(this)
-
-    const animator = new Animator()
-    this.animationClip = new AnimationState(animation ? animation : 'trigger', {
-      looping: false,
+    MeshCollider.setBox(this.button)
+    if (scale === undefined) {
+      scale = Vector3.create(1, 1, 1)
+    }
+    Transform.createOrReplace(this.button, {
+      position: position,
+      scale: scale,
+      rotation: rotation
     })
-    animator.addClip(this.animationClip)
-    this.addComponent(animator)
-
-    this.addComponentOrReplace(
-      new OnPointerDown(
-        () => {
-          action()
-          this.play()
-        },
-        { hoverText: caption, distance: 5 }
-      )
-    )
+    GltfContainer.createOrReplace(this.button, { src: model })
+    Animator.createOrReplace(this.button, {
+      states: [{
+        clip: 'trigger',
+        playing: true,
+        loop: false,
+        weight: 0.02,
+        speed: 1.7
+      }
+      ]
+    })
+    PointerEvents.createOrReplace(this.button, {
+      pointerEvents: [
+        {
+          eventType: PointerEventType.PET_DOWN,
+          eventInfo: {
+            button: InputAction.IA_POINTER,
+            showFeedback: true,
+            hoverText: caption,
+            maxDistance: 5
+          }
+        }
+      ]
+    })
+    engine.addSystem(() => {
+      if (inputSystem.isTriggered(InputAction.IA_POINTER, PointerEventType.PET_DOWN, this.button)) {
+        action()
+        this.play()
+      }
+    })
 
     this.action = action
   }
 
   play() {
-    const source = new AudioSource(this.soundClip)
-    this.addComponentOrReplace(source)
-    source.playing = true
-
-    this.animationClip.stop()
-    this.animationClip.play()
+    AudioSource.createOrReplace(this.button, {
+      audioClipUrl: 'sounds/click.mp3',
+      loop: false,
+      playing: true,
+    })
+    Animator.stopAllAnimations(this.button, true)
   }
 }

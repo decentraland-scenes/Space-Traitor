@@ -1,38 +1,32 @@
-export class MusicPlayer extends Entity {
-  constructor() {
-    super('Equipment')
+import { AudioSource, Transform, engine } from "@dcl/sdk/ecs"
 
-    this.addComponent(new Transform())
-    engine.addEntity(this)
+export class MusicPlayer {
+    public musicPlayer = engine.addEntity()
+    constructor() {
+        Transform.createOrReplace(this.musicPlayer, { parent: engine.PlayerEntity })
+    }
+    playSong(song: string, vol?: number, noLoop?: boolean) {
+        if (AudioSource.has(this.musicPlayer)) {
+            AudioSource.getMutable(this.musicPlayer).playing = false
+        }
+        AudioSource.createOrReplace(this.musicPlayer, {
+            audioClipUrl: 'sounds/' + song,
+            loop: false,
+            playing: true,
+        })
 
-    this.setParent(Attachable.AVATAR)
-  }
+        if (noLoop) {
+            AudioSource.getMutable(this.musicPlayer).loop = false
+        } else {
+            AudioSource.getMutable(this.musicPlayer).loop = true
+        }
 
-  playSong(song: string, vol?: number, noLoop?: boolean) {
-    if (this.hasComponent(AudioSource)) {
-      this.getComponent(AudioSource).playing = false
+        AudioSource.getMutable(this.musicPlayer).volume = vol ? vol : 1
+        AudioSource.getMutable(this.musicPlayer).playing = true
     }
 
-    let songClip = new AudioClip('sounds/' + song)
-
-    const source = new AudioSource(songClip)
-
-    if (noLoop) {
-      source.loop = false
-    } else {
-      source.loop = true
+    silence() {
+        AudioSource.getMutable(this.musicPlayer).playing = false
     }
 
-    source.volume = vol ? vol : 1
-
-    this.addComponentOrReplace(source)
-    source.playing = true
-  }
-
-  silence() {
-    this.getComponent(AudioSource).playing = false
-  }
 }
-
-export let music = new MusicPlayer()
-music.playSong('Space-Traitor-1.mp3', 0.25)

@@ -1,59 +1,77 @@
-import * as utils from '@dcl/ecs-scene-utils'
+import * as utils from '@dcl-sdk/utils'
+import { AudioSource, EasingFunction, GltfContainer, Transform, Tween, engine } from '@dcl/sdk/ecs'
+import { Quaternion, Vector3 } from '@dcl/sdk/math'
 
-export class Door extends Entity {
-  openSound = new AudioClip('sounds/open.mp3')
-  closeSound = new AudioClip('sounds/close.mp3')
-  closedState: Vector3
-  openState: Vector3
+export class Door {
+    public door = engine.addEntity()
+    closedState: Vector3
+    openState: Vector3
 
-  constructor(
-    transform: TranformConstructorArgs,
-    model: GLTFShape,
-    shift: Vector3,
-    speed?: number
-  ) {
-    super('Equipment')
-    this.addComponent(new Transform(transform))
-    this.addComponent(model)
-    engine.addEntity(this)
-
-    this.closedState = transform.position
-    this.openState = transform.position.add(shift)
-
-    this.addComponent(
-      new utils.ToggleComponent(utils.ToggleState.Off, (value) => {
-        if (value == utils.ToggleState.On) {
-          this.addComponentOrReplace(
-            new utils.MoveTransformComponent(
-              this.closedState,
-              this.openState,
-              speed ? speed : 1
-            )
-          )
-        } else {
-          this.addComponentOrReplace(
-            new utils.MoveTransformComponent(
-              this.openState,
-              this.closedState,
-              speed ? speed : 1
-            )
-          )
+    constructor(
+        position: Vector3,
+        rotation: Quaternion,
+        model: string,
+        shift: Vector3,
+        speed?: number
+    ) {
+        if (speed === undefined) {
+            speed = 1000
         }
-      })
-    )
-  }
+        Transform.createOrReplace(this.door, {
+            position: position,
+            rotation: rotation
+        })
+        GltfContainer.create(this.door, { src: model })
+        this.closedState = position
+        this.openState = Vector3.create(
+            position.x + shift.x,
+            position.y + shift.y,
+            position.z + shift.z
+        )
 
-  open() {
-    this.getComponent(utils.ToggleComponent).set(utils.ToggleState.On)
-    const source = new AudioSource(this.openSound)
-    this.addComponentOrReplace(source)
-    source.playing = true
-  }
+        // Add toggle actions to door
+        utils.toggles.addToggle(this.door, utils.ToggleState.Off, (value) => {
+            if (value == utils.ToggleState.On) {
+                // open
+                Tween.createOrReplace(this.door, {
+                    mode: Tween.Mode.Move({
+                        start: this.closedState,
+                        end: this.openState
+                    }),
+                    duration: speed,
+                    easingFunction: EasingFunction.EF_EASEINSINE
+                })
+            } else {
+                // close
+                Tween.createOrReplace(this.door, {
+                    mode: Tween.Mode.Move({
+                        start: this.openState,
+                        end: this.closedState
+                    }),
+                    duration: speed,
+                    easingFunction: EasingFunction.EF_EASEINSINE,
+                })
+            }
+        })
 
-  close() {
-    this.getComponent(utils.ToggleComponent).set(utils.ToggleState.Off)
-    const source = new AudioSource(this.closeSound)
-    this.addComponentOrReplace(source)
-    source.playing = true
-  }
+    }
+
+    open() {
+        utils.toggles.set(this.door, utils.ToggleState.On)
+        // Create AudioSource component
+        AudioSource.createOrReplace(this.door, {
+            audioClipUrl: 'sounds/open.mp3',
+            loop: false,
+            playing: true,
+        })
+    }
+
+    close() {
+        utils.toggles.set(this.door, utils.ToggleState.Off)
+        AudioSource.createOrReplace(this.door, {
+            audioClipUrl: 'sounds/close.mp3',
+            loop: false,
+            playing: true,
+        })
+    }
 }
