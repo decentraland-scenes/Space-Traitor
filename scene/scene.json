@@ -2,8 +2,8 @@
 	"ecs7": true,
 	"runtimeVersion": "7",
 	"display": {
-		"title": "SDK7 Scene Template",
-		"description": "template scene with SDK7",
+		"title": "Space Traitor SDK7",
+		"description": "Scene migrated to SDK7",
 		"navmapThumbnail": "images/scene-thumbnail.png",
 		"favicon": "favicon_asset"
 	},

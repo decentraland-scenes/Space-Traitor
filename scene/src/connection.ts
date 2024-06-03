@@ -26,30 +26,26 @@ export class Connection {
     //
     // make sure users are matched together by the same "realm".
     //
-    // if (realmInfo?.isPreview) {
-    //   options.realm = 'test'
-    // } else {
-    //   options.realm = realmInfo?.realmName
-    // }
-
+    const isLocal = realmInfo?.baseUrl.indexOf('localhost') !== -1 || realmInfo?.baseUrl.indexOf('127.0.0.1') !== -1 || realmInfo?.baseUrl.indexOf('192.168.') !== -1
     if (!this.userData) {
       await this.setUserData()
     }
-
+    
     const options: JoinOptions = {
       displayName: this.userData?.displayName ?? 'Anonymous',
       userId: this.userData?.userId ?? '',
+      realmName: realmInfo?.realmName ?? 'norealm',
     }
 
     console.log('data sent:', options)
 
-    const ENDPOINT = 'ws://127.0.0.1:2567'
-    console.log("Connecting to", ENDPOINT)
-    if (realmInfo?.isPreview) {
+    const ENDPOINT = isLocal && false ? 'ws://127.0.0.1:2567' : 'wss://test.dclexplorer.com/space-traitor/'
+    if (isLocal) {
       this.addConnectionDebugger(ENDPOINT)
-      console.log("is preview")
     }
-    let client = new Colyseus.Client('ws://127.0.0.1:2567');
+
+    console.log('connecting to:', ENDPOINT)
+    const client = new Colyseus.Client(ENDPOINT);
 
     try {
       const room = await client.joinOrCreate<MyRoomState>(roomName, options)

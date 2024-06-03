@@ -44,6 +44,7 @@ declare type SceneMessageReadyData = {
 declare type JoinOptions = {
     displayName: string
     userId: string
+    realmName: string
 }
 
 
