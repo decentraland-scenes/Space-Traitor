@@ -221,7 +221,7 @@ export class GameController {
                 player.listen('alive', (value: boolean) => {
                     console.log('player died ', player.userId, value)
                 })
-                if (player.id === this.connection.userData?.userId) {
+                if (player.userId === this.connection.userData?.userId) {
                     player.listen('isTraitor', (value: boolean) => {
                         console.log('YOU ARE THE TRAITOR ', value)
                         setPlayerIsTraitor(value)
@@ -239,9 +239,6 @@ export class GameController {
                             if (iteratedPlayer.userId === player.userId) votedPlayerFound = true
                             if (iteratedPlayer.alive && !votedPlayerFound) votedPosition++
                         })
-
-                        // TODO
-                        // this.voting.updateVotingUI(votedPosition, 0, player.votes.length)
                     }
                 })
             })

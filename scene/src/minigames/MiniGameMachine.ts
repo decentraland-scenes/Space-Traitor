@@ -28,14 +28,21 @@ export class MiniGameMachine {
         switch (randomNumber) {
             case 1:
                 this.bugClicker.Start()
+                this.switchTogglers.Hide()
+                this.wordTyper.Hide()
                 break
             case 2:
                 this.switchTogglers.Start()
+                this.bugClicker.Hide()
+                this.wordTyper.Hide()
                 break
             default:
                 // 0
                 this.wordTyper.Start()
+                this.bugClicker.Hide()
+                this.switchTogglers.Hide()
                 break
         }
     }
+    
 }

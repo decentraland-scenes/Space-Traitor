@@ -39,6 +39,10 @@ export class BugClicker {
         this.started = true
         this.visibleUi = true
     }
+    Hide() {
+      this.visibleUi = false
+      this.Reset()
+    }
 
     Stop() {
         this.Reset()
@@ -67,6 +71,7 @@ export class BugClicker {
             successNeeded={this.successNeeded}
             successScore={this.currentSuccesses}
             onSuccess={() => this.AddSuccess(1)}
+            closeRequest={() => this.Hide()}
         />
     }
 

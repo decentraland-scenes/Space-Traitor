@@ -20,11 +20,16 @@ export class SwitchTogglers {
       visible={this.visibleUi}
       states={this.states}
       onToggle={this.checkSuccess.bind(this)}
+      closeRequest={() => this.Hide()}
     />
   }
   Start() {
     this.reset()
     this.visibleUi = true
+  }
+  Hide() {
+    this.visibleUi = false
+    this.reset()
   }
   checkSuccess() {
     if (this.states.filter(item => item).length === this.successNeeded) {

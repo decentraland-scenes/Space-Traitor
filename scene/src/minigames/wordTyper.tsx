@@ -48,6 +48,10 @@ export class WordTyper {
     this.visibleUi = true
   }
 
+  Hide() {
+    this.visibleUi = false
+    this.Reset()
+  }
   Stop() {
     this.Reset()
     this.visibleUi = false
@@ -98,6 +102,7 @@ export class WordTyper {
       successNeeded={this.successNeeded}
       onValueChange={(value: string) => this.inputValue = value}
       currentValue={this.inputValue}
+      closeRequest={() => this.Hide()}
     />
   }
 
