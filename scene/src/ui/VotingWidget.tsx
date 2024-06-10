@@ -10,12 +10,13 @@ type VotingWidgetProps = {
     votingLeft: number
     onSelectPlayer: (index: number) => void
     selectedUserId: string | null
+    selectedIndex: number
 
     onConfirm: () => void
 }
 
 {/* Fix Icon - UI - timer*/ }
-function VotingWidget({ visible, players, lockConfirmOption, onSelectPlayer, votingLeft, selectedUserId, onConfirm }: VotingWidgetProps): ReactEcs.JSX.Element {
+function VotingWidget({ visible, players, lockConfirmOption, onSelectPlayer, votingLeft, selectedUserId, selectedIndex, onConfirm }: VotingWidgetProps): ReactEcs.JSX.Element {
     return (
         <Base title='Time To Vote' visible={visible}>
             <UiEntity uiTransform={{
@@ -41,12 +42,15 @@ function VotingWidget({ visible, players, lockConfirmOption, onSelectPlayer, vot
                         margin: 20
                     }}
                     // PUT avatar texture
-                    uiBackground={selectedUserId !== null || true ? {
-                        textureMode: 'stretch',
-                        avatarTexture: {
-                            userId: '0x83F9192D59B393c8789B55D446E5D4A77075C820',
+                    uiBackground={
+                        selectedUserId !== null ? 
+                        {
+                            textureMode: 'stretch',
+                            avatarTexture: {
+                                userId: selectedUserId,
                             },
-                            } : {}}
+                        } : {}
+                    }
                 />
                 {/* Label - Waiting for others players */}
                 <Label
@@ -74,12 +78,14 @@ function VotingWidget({ visible, players, lockConfirmOption, onSelectPlayer, vot
                     {/* Dropdown - Players*/}
                     <Dropdown
                         options={players}
+                        selectedIndex={selectedIndex}
                         onChange={onSelectPlayer}
                         uiTransform={{
                             width: '400px',
                             height: '40px',
                             position: { right: "0%", bottom: 0 },
                         }}
+
                     />
                     {/* Button - Confirm*/}
                     <Button

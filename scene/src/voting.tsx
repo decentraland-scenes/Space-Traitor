@@ -17,6 +17,7 @@ export class Voting {
     i = 0
     offset = 30
     selectedPlayer: Player | null = null
+    selectedPlayerIndex: number = -1
     room: Room<MyRoomState> | null = null
     votingPlayers: Player[] = [];
     votingPlayerOptions: string[] = [];
@@ -26,6 +27,7 @@ export class Voting {
     }
     selectOption(index: number) {
         this.selectedPlayer = this.votingPlayers[index]
+        this.selectedPlayerIndex = index
     }
 
     mainUi() {
@@ -37,6 +39,7 @@ export class Voting {
                 votingLeft={this.votingTimeLeft}
                 onSelectPlayer={(player) => this.selectOption(player)}
                 selectedUserId={this.selectedPlayer?.userId || null}
+                selectedIndex={this.selectedPlayerIndex}
                 onConfirm={() => this.onConfirm()}
             />
         )
@@ -57,6 +60,9 @@ export class Voting {
 
         this.offset = room.state.players.size * -50
         this.votingUI_visible = true
+
+        this.selectedPlayer = null
+        this.selectedPlayerIndex = -1
     }
 
     updateVotingTimer(timeLeft: number) {

@@ -2,6 +2,7 @@ import { Animator, AudioSource, Entity, GltfContainer, InputAction, MeshCollider
 import { Quaternion, Vector3 } from "@dcl/sdk/math"
 import { Room } from "colyseus.js"
 import { playSingleAnimation } from "./animHelper"
+import { playerIsTraitor } from "./SpaceShip"
 
 export enum CableColors {
     Blue,
@@ -133,7 +134,7 @@ export class FuseBox {
         engine.addSystem(() => {
             if (inputSystem.isTriggered(InputAction.IA_POINTER, PointerEventType.PET_DOWN, this.redCable)) {
                 if (!boxState.doorOpen || boxState.redCableCut) return
-                playSingleAnimation(this.redCable, 'CableRedAction')
+                if (playerIsTraitor) playSingleAnimation(this.redCable, 'CableRedAction')
                 room.send('client', {
                     msg: 'fuseChange',
                     id: this.id,
@@ -180,7 +181,7 @@ export class FuseBox {
         engine.addSystem(() => {
             if (inputSystem.isTriggered(InputAction.IA_POINTER, PointerEventType.PET_DOWN, this.greenCable)) {
                 if (!boxState.doorOpen || boxState.greenCableCut) return
-                playSingleAnimation(this.greenCable, 'CableGreenAction')
+                if (playerIsTraitor) playSingleAnimation(this.greenCable, 'CableGreenAction')
                 room.send('client', {
                     msg: 'fuseChange',
                     id: this.id,
@@ -223,7 +224,7 @@ export class FuseBox {
         engine.addSystem(() => {
             if (inputSystem.isTriggered(InputAction.IA_POINTER, PointerEventType.PET_DOWN, this.blueCable)) {
                 if (!boxState.doorOpen || boxState.blueCableCut) return
-                playSingleAnimation(this.blueCable, 'CableBlueAction')
+                if (playerIsTraitor) playSingleAnimation(this.blueCable, 'CableBlueAction')
                 room.send('client', {
                     msg: 'fuseChange',
                     id: this.id,

@@ -1,5 +1,6 @@
 import { Color4 } from '@dcl/sdk/math'
 import ReactEcs, { Label, UiEntity } from '@dcl/sdk/react-ecs'
+import { playerIsTraitor } from '../entities/SpaceShip'
 
 type TimeCounterProps = {
     visible: boolean
@@ -41,6 +42,34 @@ function TimeCounter({ visible, text }: TimeCounterProps): ReactEcs.JSX.Element 
                     fontSize={37}
                 />
             </UiEntity>
+
+            {/* Fix Icon - UI*/}
+            { playerIsTraitor && 
+                <UiEntity
+                    uiTransform={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        positionType: 'absolute',
+                        position: { right: "100%", bottom: '2%' },
+                    }}
+                >
+                    <UiEntity
+                        uiTransform={{
+                            width: '100px',
+                            height: '100px',
+                        }}
+                        uiBackground={{
+                            textureMode: 'stretch',
+                            texture: {
+                                src: 'images/robot2.png',
+                            },
+                        }}
+                    >
+                        <Label uiTransform={{width: '100%'}} value={`You're the traitor`} color={Color4.Black()} textAlign='bottom-center' fontSize={12} />
+                    </UiEntity>
+                </UiEntity>
+            }
         </UiEntity>
     )
 }
