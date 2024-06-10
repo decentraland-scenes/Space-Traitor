@@ -70,7 +70,8 @@ export class Voting {
         if (!playerToKick) {
             this.gameController.ui.displayAnnouncement('No one was kicked', Color4.Red(), 15000)
         } else {
-            this.gameController.ui.displayAnnouncement(playerToKick + 'was ejected out into space', Color4.Red(), 15000)
+            const playerDisplay = this.votingPlayers.find(player => player.userId === playerToKick)?.displayName || playerToKick
+            this.gameController.ui.displayAnnouncement(`${playerDisplay} was ejected out into space`, Color4.Red(), 15000)
             utils.timers.setTimeout(() => {
                 if (isTraitor) {
                     openDialogWindow(this.gameController.ui.satelliteUI, this.gameController.dialogs.MissionControlTips, 5)

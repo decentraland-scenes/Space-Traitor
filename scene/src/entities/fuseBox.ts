@@ -1,6 +1,7 @@
 import { Animator, AudioSource, Entity, GltfContainer, InputAction, MeshCollider, PointerEventType, PointerEvents, Schemas, Transform, engine, inputSystem } from "@dcl/sdk/ecs"
 import { Quaternion, Vector3 } from "@dcl/sdk/math"
 import { Room } from "colyseus.js"
+import { playSingleAnimation } from "./animHelper"
 
 export enum CableColors {
     Blue,
@@ -81,7 +82,7 @@ export class FuseBox {
                         doorOpen: false,
                     }
                     boxState.doorOpen = false
-                    Animator.playSingleAnimation(this.fusebox, 'close')
+                    playSingleAnimation(this.fusebox, 'close')
                 } else {
                     data = {
                         msg: 'fuseChange',
@@ -89,7 +90,7 @@ export class FuseBox {
                         doorOpen: true,
                     }
                     boxState.doorOpen = true
-                    Animator.playSingleAnimation(this.fusebox, 'open')
+                    playSingleAnimation(this.fusebox, 'open')
                 }
                 console.log('door open or close?' + boxState.doorOpen)
                 room.send('client', data satisfies SceneMessageFuseChange)
@@ -106,11 +107,12 @@ export class FuseBox {
         Transform.getMutable(this.redCable).position.z = -0.25
 
         Animator.create(this.redCable, {
-            states: [{
-                clip: 'CableRedAction',
-                playing: false,
-                loop: false,
-            }
+            states: [
+                {
+                    clip: 'CableRedAction',
+                    playing: false,
+                    loop: false,
+                }
             ]
         })
         GltfContainer.create(this.redCable, { src: 'models/RedCable.glb' })
@@ -131,7 +133,7 @@ export class FuseBox {
         engine.addSystem(() => {
             if (inputSystem.isTriggered(InputAction.IA_POINTER, PointerEventType.PET_DOWN, this.redCable)) {
                 if (!boxState.doorOpen || boxState.redCableCut) return
-                Animator.playSingleAnimation(this.redCable, 'CableRedAction')
+                playSingleAnimation(this.redCable, 'CableRedAction')
                 room.send('client', {
                     msg: 'fuseChange',
                     id: this.id,
@@ -151,11 +153,12 @@ export class FuseBox {
 
 
         Animator.create(this.greenCable, {
-            states: [{
-                clip: 'CableGreenAction',
-                playing: false,
-                loop: false,
-            }
+            states: [
+                {
+                    clip: 'CableGreenAction',
+                    playing: false,
+                    loop: false,
+                }
             ]
         })
         GltfContainer.create(this.greenCable, { src: 'models/GreenCable.glb' })
@@ -177,7 +180,7 @@ export class FuseBox {
         engine.addSystem(() => {
             if (inputSystem.isTriggered(InputAction.IA_POINTER, PointerEventType.PET_DOWN, this.greenCable)) {
                 if (!boxState.doorOpen || boxState.greenCableCut) return
-                Animator.playSingleAnimation(this.greenCable, 'CableGreenAction')
+                playSingleAnimation(this.greenCable, 'CableGreenAction')
                 room.send('client', {
                     msg: 'fuseChange',
                     id: this.id,
@@ -194,11 +197,12 @@ export class FuseBox {
         Transform.getMutable(this.blueCable).position.z = -0.25
 
         Animator.create(this.blueCable, {
-            states: [{
-                clip: 'CableBlueAction',
-                playing: false,
-                loop: false,
-            }
+            states: [
+                {
+                    clip: 'CableBlueAction',
+                    playing: false,
+                    loop: false,
+                }
             ]
         })
         GltfContainer.create(this.blueCable, { src: 'models/BlueCable.glb' })
@@ -219,7 +223,7 @@ export class FuseBox {
         engine.addSystem(() => {
             if (inputSystem.isTriggered(InputAction.IA_POINTER, PointerEventType.PET_DOWN, this.blueCable)) {
                 if (!boxState.doorOpen || boxState.blueCableCut) return
-                Animator.playSingleAnimation(this.blueCable, 'CableBlueAction')
+                playSingleAnimation(this.blueCable, 'CableBlueAction')
                 room.send('client', {
                     msg: 'fuseChange',
                     id: this.id,
@@ -244,9 +248,9 @@ export class FuseBox {
     }
 
     reset() {
-        Animator.stopAllAnimations(this.redCable, true)
-        Animator.stopAllAnimations(this.greenCable, true)
-        Animator.stopAllAnimations(this.blueCable, true)
+        playSingleAnimation(this.redCable, 'CableRedAction', true, 0.0)
+        playSingleAnimation(this.greenCable, "CableGreenAction", true, 0.0)
+        playSingleAnimation(this.blueCable, "CableBlueAction", true, 0.0)
         Animator.stopAllAnimations(this.fusebox, true)
 
         CableBox.getMutable(this.fusebox).redCableCut = false
@@ -285,7 +289,7 @@ export function toggleBox(entity: FuseBox, value: boolean, playSound = true) {
     })
 
     const clip = value ? 'open' : 'close'
-    Animator.playSingleAnimation(entity.fusebox, clip)
+    playSingleAnimation(entity.fusebox, clip)
 
     boxState.doorOpen = value
     console.log("THE METHOD WAS RUN FULLY")
@@ -306,7 +310,7 @@ export function toggleCable(
             redCableClip
             boxState.redCableCut = value
             if (value == true) {
-                Animator.playSingleAnimation(entity.redCable, 'CableRedAction')
+                playSingleAnimation(entity.redCable, 'CableRedAction')
             } else {
                 Animator.stopAllAnimations(entity.redCable, true)
                 Animator.stopAllAnimations(entity.greenCable, true)
@@ -318,7 +322,7 @@ export function toggleCable(
             greenCableClip
             boxState.greenCableCut = value
             if (value == true) {
-                Animator.playSingleAnimation(entity.greenCable, 'CableGreenAction')
+                playSingleAnimation(entity.greenCable, 'CableGreenAction')
             } else {
                 Animator.stopAllAnimations(entity.redCable, true)
                 Animator.stopAllAnimations(entity.greenCable, true)
@@ -330,7 +334,7 @@ export function toggleCable(
             blueCableClip
             boxState.blueCableCut = value
             if (value == true) {
-                Animator.playSingleAnimation(entity.blueCable, 'CableBlueAction')
+                playSingleAnimation(entity.blueCable, 'CableBlueAction')
             } else {
                 Animator.stopAllAnimations(entity.redCable, true)
                 Animator.stopAllAnimations(entity.greenCable, true)

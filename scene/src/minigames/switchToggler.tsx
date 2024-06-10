@@ -24,12 +24,12 @@ export class SwitchTogglers {
     />
   }
   Start() {
-    this.reset()
+    this.Reset()
     this.visibleUi = true
   }
   Hide() {
     this.visibleUi = false
-    this.reset()
+    this.Reset()
   }
   checkSuccess() {
     if (this.states.filter(item => item).length === this.successNeeded) {
@@ -39,10 +39,10 @@ export class SwitchTogglers {
   }
   Win() {
     this.visibleUi = false
-    this.reset()
+    this.Reset()
     this.onWinCallback()
   }
-  reset() {
+  Reset() {
     this.currentSuccesses = 0
     this.states = Array.from({ length: 12 }, () => false)
   }

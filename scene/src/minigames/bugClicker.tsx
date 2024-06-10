@@ -34,8 +34,8 @@ export class BugClicker {
         this.currentSuccesses = 0
         this.started = false
     }
-
     Start() {
+        this.Reset()
         this.started = true
         this.visibleUi = true
     }
@@ -43,13 +43,9 @@ export class BugClicker {
       this.visibleUi = false
       this.Reset()
     }
-
-    Stop() {
-        this.Reset()
-    }
     Win() {
         this.visibleUi = false
-        this.Stop()
+        this.Reset()
         this.onWinCallback()
     }
     AddSuccess(newSuccesses: number) {

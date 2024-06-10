@@ -30,16 +30,17 @@ function TimeCounter({ visible, text }: TimeCounterProps): ReactEcs.JSX.Element 
                         src: 'images/ui-counter-2.png',
                     },
                 }}
-            />
-            <Label
-                uiTransform={{
-                    positionType: 'absolute',
-                    position: { top: '38%', left: '45%' },
-                }}
-                value={text}
-                color={Color4.Black()}
-                fontSize={37}
-            />
+            >
+                <Label
+                    uiTransform={{
+                        width: '100%',
+                        height: '100%'
+                    }}
+                    value={text}
+                    color={Color4.Black()}
+                    fontSize={37}
+                />
+            </UiEntity>
         </UiEntity>
     )
 }

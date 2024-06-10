@@ -25,6 +25,8 @@ function HudCounter({ visible, credits }: HudCounterProps): ReactEcs.JSX.Element
                 uiTransform={{
                     width: '217',
                     height: '105',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
                 uiBackground={{
                     textureMode: 'center',
@@ -32,16 +34,18 @@ function HudCounter({ visible, credits }: HudCounterProps): ReactEcs.JSX.Element
                         src: 'images/ui-counter-2.png',
                     },
                 }}
-            />
-            <Label
-                uiTransform={{
-                    positionType: 'absolute',
-                    position: { top: '38%', left: '45%' },
-                }}
-                value={`${credits}/8`}
-                color={Color4.Purple()}
-                fontSize={37}
-            />
+            >
+                <Label
+                    uiTransform={{
+                        width: '100%',
+                        height: '100%'
+                    }}
+                    textAlign='middle-center'
+                    value={`${credits}/8`}
+                    color={Color4.Purple()}
+                    fontSize={37}
+                />
+            </UiEntity>
 
             {/* Fix Icon - UI*/}
             <UiEntity

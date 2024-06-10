@@ -36,7 +36,7 @@ function Base({ visible, title, children, closeRequest }: BaseProps): ReactEcs.J
                     textureMode: 'stretch'
                 }}
             >
-                <UiEntity uiTransform={{ width: '100%', height: '300px', flexDirection: 'column'}}>
+                <UiEntity uiTransform={{ width: '100%', height: '300px', flexDirection: 'column'}} >
                     <Button uiTransform={{ alignSelf: 'flex-end', width: 100 }} value='CLOSE' onMouseDown={closeRequest} />
                     <Label
                         uiTransform={{
@@ -52,7 +52,7 @@ function Base({ visible, title, children, closeRequest }: BaseProps): ReactEcs.J
                 </UiEntity>
                 
 
-                <UiEntity uiTransform={{ width: '100%', height: '500px', alignItems: 'center', justifyContent: 'center' }}>
+                <UiEntity uiTransform={{ width: '100%', height: '500px', alignItems: 'center', justifyContent: 'center' }} >
                     {children}
                 </UiEntity>
             </UiEntity>

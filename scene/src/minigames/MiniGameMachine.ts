@@ -44,5 +44,11 @@ export class MiniGameMachine {
                 break
         }
     }
+
+    Hide() {
+        this.wordTyper.Hide()
+        this.bugClicker.Hide()
+        this.switchTogglers.Hide()
+    }
     
 }

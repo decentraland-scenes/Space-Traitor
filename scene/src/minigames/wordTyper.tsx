@@ -42,19 +42,14 @@ export class WordTyper {
     this.currentSuccesses = 0
     this.started = false
   }
-
   Start() {
+    this.Reset()
     this.started = true
     this.visibleUi = true
   }
-
   Hide() {
     this.visibleUi = false
     this.Reset()
-  }
-  Stop() {
-    this.Reset()
-    this.visibleUi = false
   }
   Win() {
     this.visibleUi = false

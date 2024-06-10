@@ -319,6 +319,7 @@ export class GameController {
     }
     finishGame(traitorWon: boolean) {
         ship.active = false
+        this.miniGameMachine.Hide()
         this.mainDoor.close()
         movePlayerTo({
             newRelativePosition: Vector3.create(1, 1, 1)
